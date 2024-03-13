@@ -15,10 +15,16 @@ def find_largest_text_in_first_two_pages(doc):
                 for line in instance["lines"]:
                     for span in line["spans"]:
                         # Check if the text length is at least 20 characters
-                        if span["size"] > largest_size and len(span["text"]) >= 20:
+                        if span["size"] > largest_size and len(span["text"]) >= 30:
                             largest_size = span["size"]
                             largest_text = span["text"]
     return largest_text
+
+def sanitize_filename(title):
+    invalid_chars = '<>:"/\\|?*'
+    for char in invalid_chars:
+        title = title.replace(char, '')
+    return title
 
 def rename_pdfs_in_directory(directory):
     for filename in os.listdir(directory):
@@ -26,8 +32,9 @@ def rename_pdfs_in_directory(directory):
             pdf_path = os.path.join(directory, filename)
             try:
                 doc = fitz.open(pdf_path)
-                title = find_largest_text_on_first_page(doc).strip().replace("/", "-")  # Basic sanitization
+                title = find_largest_text_in_first_two_pages(doc).strip().replace("/", "-")  # Basic sanitization
                 doc.close()
+                title = sanitize_filename(title)
                 if title:
                     new_filename = title + ".pdf"
                     new_path = os.path.join(directory, new_filename)
