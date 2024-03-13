@@ -33,8 +33,8 @@ def rename_pdfs_in_directory(directory):
             try:
                 doc = fitz.open(pdf_path)
                 title = find_largest_text_in_first_two_pages(doc).strip().replace("/", "-")  # Basic sanitization
-                doc.close()
                 title = sanitize_filename(title)
+                doc.close()
                 if title:
                     new_filename = title + ".pdf"
                     new_path = os.path.join(directory, new_filename)
