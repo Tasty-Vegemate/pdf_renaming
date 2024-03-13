@@ -2,18 +2,22 @@ import os
 import fitz  # PyMuPDF
 import shutil
 
-def find_largest_text_on_first_page(doc):
-    first_page = doc[0]
-    text_instances = first_page.get_text("dict")["blocks"]
+
+def find_largest_text_in_first_two_pages(doc):
     largest_text = ""
     largest_size = 0
-    for instance in text_instances:
-        if "lines" in instance:
-            for line in instance["lines"]:
-                for span in line["spans"]:
-                    if span["size"] > largest_size:
-                        largest_size = span["size"]
-                        largest_text = span["text"]
+    # Process the first two pages or the total number of pages if less than two
+    for page_num in range(min(2, len(doc))):
+        page = doc[page_num]
+        text_instances = page.get_text("dict")["blocks"]
+        for instance in text_instances:
+            if "lines" in instance:
+                for line in instance["lines"]:
+                    for span in line["spans"]:
+                        # Check if the text length is at least 20 characters
+                        if span["size"] > largest_size and len(span["text"]) >= 20:
+                            largest_size = span["size"]
+                            largest_text = span["text"]
     return largest_text
 
 def rename_pdfs_in_directory(directory):
@@ -28,7 +32,6 @@ def rename_pdfs_in_directory(directory):
                     new_filename = title + ".pdf"
                     new_path = os.path.join(directory, new_filename)
                     os.rename(pdf_path, new_path)          
-                    print(f"Renamed '{filename}' to '{new_filename}'")
                 else:
                     print(f"Could not extract title for '{filename}'")
                 doc.close()
