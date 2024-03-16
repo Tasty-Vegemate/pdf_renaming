@@ -1,12 +1,11 @@
 import os
 import fitz  # PyMuPDF
-import shutil
 
 
 def find_largest_text_in_first_two_pages(doc):
-    largest_text = ""
+    size_text_list = []
+    doc = fitz.open(doc)
     largest_size = 0
-    # Process the first two pages or the total number of pages if less than two
     for page_num in range(min(2, len(doc))):
         page = doc[page_num]
         text_instances = page.get_text("dict")["blocks"]
@@ -14,11 +13,28 @@ def find_largest_text_in_first_two_pages(doc):
             if "lines" in instance:
                 for line in instance["lines"]:
                     for span in line["spans"]:
-                        # Check if the text length is at least 20 characters
-                        if span["size"] > largest_size and len(span["text"]) >= 30:
+                        if span["size"] > largest_size:
                             largest_size = span["size"]
-                            largest_text = span["text"]
-    return largest_text
+                            number = instance["number"]
+                            text = span["text"]
+                            size_text_list.append({"page_number" : page_num , "number" : number, "text": [text]})
+                            
+            if number == instance["number"]:
+                for line in instance["lines"]:
+                    for span in line["spans"]:
+                        text_add = span["text"]
+                        if text_add != text:
+                            for item in size_text_list:
+                                if item["page_number"] == page_num and item["number"] == number:
+                                    item["text"][-1] += f" {text_add}"
+    max_length = 0
+    for item in size_text_list:
+        text_length = len(item['text'][0])
+        if text_length > max_length:
+            max_length = text_length
+            title = item["text"][0]
+    doc.close()
+    return title
 
 def sanitize_filename(title):
     invalid_chars = '<>:"/\\|?*'
