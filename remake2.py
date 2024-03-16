@@ -25,10 +25,19 @@ def number_size_extracter(location):
                             for item in size_text_list:
                                 if item["page_number"] == page_num and item["number"] == number:
                                     item["text"][-1] += f" {text_add}"
+    max_length = 0
+    for item in size_text_list:
+        text_length = len(item['text'][0])
+        if text_length > max_length:
+            max_length = text_length
+            Title = item["text"][0]
+
+    return Title
 
 
-    print(size_text_list)
 
 
 
-number_size_extracter("./s41467-021-26511-5.pdf")
+
+Title = number_size_extracter("./s41467-021-26511-5.pdf")
+print(Title)
